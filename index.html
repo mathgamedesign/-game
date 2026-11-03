@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1-10 乘法大冒險 🚀</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti for Celebration -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Google Fonts: Fredoka & Noto Sans TC for super friendly playful typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Noto+Sans+TC:wght@500;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Fredoka', 'Noto Sans TC', sans-serif;
+            background-color: #f0fdf4;
+            background-image: radial-gradient(#bbf7d0 2px, transparent 2px);
+            background-size: 24px 24px;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .bounce-in {
+            animation: bounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .pulse-subtle {
+            animation: pulseSubtle 2s infinite;
+        }
+
+        @keyframes pulseSubtle {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+
+        .shake {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+
+        .btn-game {
+            transition: all 0.15s ease;
+            box-shadow: 0 6px 0 rgba(0,0,0,0.15);
+        }
+        .btn-game:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.15);
+        }
+
+        .grid-item-pop {
+            animation: popGrid 0.3s ease-out forwards;
+        }
+
+        @keyframes popGrid {
+            0% { transform: scale(0); opacity: 0; }
+            80% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 flex flex-col justify-between p-2 md:p-6">
+
+    <!-- Top Navigation Header -->
+    <header class="max-w-4xl mx-auto w-full flex items-center justify-between bg-white/90 backdrop-blur rounded-3xl p-3 md:p-4 shadow-lg border-4 border-amber-300 mb-3">
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="showScreen('menuScreen')">
+            <div class="w-12 h-12 md:w-14 md:h-14 bg-amber-400 rounded-2xl flex items-center justify-center text-2xl md:text-3xl shadow-inner text-white font-bold">
+                乘
+            </div>
+            <div>
+                <h1 class="text-xl md:text-2xl font-black text-amber-600 tracking-wide">乘法大冒險</h1>
+                <p class="text-xs md:text-sm text-slate-500 font-bold">二年級專用 1-10 快樂學</p>
+            </div>
+        </div>
+
+        <!-- Star Badge Counter & Audio Toggle -->
+        <div class="flex items-center space-x-2 md:space-x-4">
+            <div class="flex items-center bg-amber-100 px-3 py-1.5 rounded-full border-2 border-amber-300">
+                <i class="fa-solid font-black fa-star text-amber-500 text-lg md:text-xl mr-1.5 animate-bounce"></i>
+                <span id="totalStarsCount" class="font-black text-amber-700 text-lg md:text-xl">0</span>
+            </div>
+
+            <button id="soundToggleBtn" onclick="toggleSound()" class="w-10 h-10 md:w-12 md:h-12 bg-indigo-100 hover:bg-indigo-200 text-indigo-600 rounded-full flex items-center justify-center text-lg md:text-xl border-2 border-indigo-300 transition">
+                <i id="soundIcon" class="fa-solid fa-volume-high"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="max-w-4xl mx-auto w-full flex-1 flex flex-col justify-center my-auto">
+
+        <!-- ================= 1. MENU SCREEN ================= -->
+        <section id="menuScreen" class="space-y-6 bounce-in">
+            <!-- Banner / Mode Switchers -->
+            <div class="bg-gradient-to-r from-sky-400 via-indigo-400 to-purple-400 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden text-center md:text-left flex flex-col md:flex-row items-center justify-between">
+                <div class="z-10 max-w-md">
+                    <span class="bg-white/20 text-white text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wider mb-2 inline-block">二年級數學小達人</span>
+                    <h2 class="text-2xl md:text-3xl font-black mb-2">準備好挑戰乘法城堡了嗎？</h2>
+                    <p class="text-sky-100 text-sm md:text-base font-medium mb-4">點擊下方數字圖章，學習 1-10 乘法表，蒐集幸運星星與金獎牌！</p>
+                    
+                    <button onclick="openBadgesModal()" class="bg-amber-400 hover:bg-amber-300 text-amber-950 font-black px-5 py-2.5 rounded-2xl shadow-lg border-2 border-amber-200 text-sm md:text-base flex items-center space-x-2 mx-auto md:mx-0 btn-game">
+                        <i class="fa-solid fa-award text-xl"></i>
+                        <span>查看我的成就勳章 (<span id="unlockedBadgesCount">0</span>/6)</span>
+                    </button>
+                </div>
+                
+                <div class="mt-4 md:mt-0 text-7xl md:text-8xl text-amber-300 drop-shadow-lg z-10">
+                    🦁
+                </div>
+            </div>
+
+            <!-- Settings Bar (Input Mode & Timer Toggle) -->
+            <div class="bg-white rounded-2xl p-4 shadow-md border-2 border-slate-200 flex flex-wrap items-center justify-between gap-3 text-sm md:text-base font-bold text-slate-700">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-sliders text-indigo-500 text-lg"></i>
+                    <span>答題模式：</span>
+                    <div class="inline-flex bg-slate-100 p-1 rounded-xl border border-slate-300">
+                        <button id="modeChoiceBtn" onclick="setInputMode('choice')" class="px-3 py-1 rounded-lg text-xs md:text-sm transition bg-indigo-600 text-white shadow">
+                            <i class="fa-solid fa-list-check mr-1"></i> 四選一
+                        </button>
+                        <button id="modeKeypadBtn" onclick="setInputMode('keypad')" class="px-3 py-1 rounded-lg text-xs md:text-sm transition text-slate-600 hover:bg-slate-200">
+                            <i class="fa-solid fa-calculator mr-1"></i> 數字鍵盤
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-3">
+                    <label class="flex items-center space-x-2 cursor-pointer">
+                        <input type="checkbox" id="timerToggle" onchange="toggleTimerSetting()" class="w-5 h-5 rounded text-amber-500 focus:ring-amber-400">
+                        <span>開啟倒數計時器 (15秒)</span>
+                    </label>
+                    <button onclick="resetGameProgress()" class="flex items-center space-x-1 bg-rose-100 hover:bg-rose-200 text-rose-600 px-3 py-1.5 rounded-lg border border-rose-300 transition text-xs md:text-sm btn-game">
+                        <i class="fa-solid fa-trash-can"></i>
+                        <span>重置進度</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Ultimate Challenge Button -->
+            <div class="w-full">
+                <button onclick="startLevel('mixed')" class="w-full bg-gradient-to-r from-rose-500 via-pink-500 to-amber-500 hover:brightness-105 text-white p-5 rounded-3xl shadow-xl border-4 border-pink-200 flex items-center justify-between group btn-game">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center text-3xl group-hover:rotate-12 transition">
+                            🏆
+                        </div>
+                        <div class="text-left">
+                            <div class="text-2xl font-black">全能大挑戰 (1-10 混合題)</div>
+                            <div class="text-pink-100 text-xs md:text-sm font-bold">隨機 10 道題目，考驗你的終極實力！</div>
+                        </div>
+                    </div>
+                    <div class="hidden sm:flex items-center text-xl font-black bg-white text-rose-600 px-4 py-2 rounded-2xl">
+                        開始挑戰 <i class="fa-solid fa-arrow-right ml-2"></i>
+                    </div>
+                </button>
+            </div>
+
+            <!-- Level Selector Grid (1 to 10) -->
+            <div>
+                <h3 class="text-lg md:text-xl font-black text-slate-700 mb-3 flex items-center">
+                    <i class="fa-solid fa-map-location-dot text-amber-500 mr-2"></i> 單獨乘數練習關卡
+                </h3>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 md:gap-4" id="levelGrid">
+                    <!-- Javascript will render 1 to 10 level cards here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 2. GAME PLAY SCREEN ================= -->
+        <section id="gameScreen" class="hidden flex-col space-y-4">
+            
+            <!-- Progress Bar & Stats Panel -->
+            <div class="bg-white rounded-2xl p-3 md:p-4 shadow-md border-2 border-slate-200 flex items-center justify-between text-sm md:text-base font-bold">
+                <button onclick="quitGame()" class="text-slate-400 hover:text-slate-600 px-2 py-1 rounded-lg">
+                    <i class="fa-solid fa-house text-lg"></i>
+                </button>
+
+                <!-- Level Title -->
+                <div id="gameLevelTitle" class="text-indigo-600 font-black text-lg md:text-xl">
+                    3 的乘法練習
+                </div>
+
+                <!-- Combo Badge -->
+                <div class="flex items-center space-x-1 bg-amber-100 text-amber-800 px-3 py-1 rounded-full border border-amber-300">
+                    <span>🔥 連勝:</span>
+                    <span id="comboCount" class="font-black text-lg text-rose-600">0</span>
+                </div>
+
+                <!-- Progress Counter -->
+                <div class="text-slate-500">
+                    題目 <span id="currentQIndex" class="text-indigo-600 font-black text-lg">1</span> / <span id="totalQuestionsCount">10</span>
+                </div>
+            </div>
+
+            <!-- Timer Bar (if enabled) -->
+            <div id="timerContainer" class="w-full bg-slate-200 h-3 rounded-full overflow-hidden hidden">
+                <div id="timerBar" class="bg-amber-500 h-full w-full transition-all duration-1000 ease-linear"></div>
+            </div>
+
+            <!-- Question & Visual Card -->
+            <div class="bg-white rounded-3xl p-5 md:p-8 shadow-xl border-4 border-indigo-200 text-center relative flex flex-col items-center">
+                
+                <!-- Math Formula Display -->
+                <div class="flex items-center justify-center space-x-3 md:space-x-6 text-4xl sm:text-5xl md:text-6xl font-black text-slate-800 my-2">
+                    <span id="numA" class="text-indigo-600">3</span>
+                    <span class="text-amber-500">×</span>
+                    <span id="numB" class="text-rose-500">4</span>
+                    <span class="text-slate-400">=</span>
+                    <span id="answerDisplay" class="min-w-[70px] md:min-w-[100px] border-b-4 border-dashed border-indigo-400 text-indigo-700 inline-block px-2">?</span>
+                </div>
+
+                <!-- Toggle Visual Array Grid Button -->
+                <button id="toggleGridBtn" onclick="toggleVisualGrid()" class="mt-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-200 px-4 py-2 rounded-2xl text-xs md:text-sm font-bold flex items-center space-x-2 transition">
+                    <i class="fa-solid fa-lightbulb text-amber-500"></i>
+                    <span id="toggleGridText">點擊查看「圖示矩陣輔助」 (3列 × 4個)</span>
+                </button>
+
+                <!-- Visual Grid Display Area (Array Grid Visualization) -->
+                <div id="visualGridArea" class="mt-4 w-full bg-slate-50 rounded-2xl p-4 border-2 border-indigo-100 hidden">
+                    <div id="gridExplanation" class="text-xs md:text-sm font-bold text-slate-600 mb-3">
+                        觀念拆解：有 <span id="gridRowsText" class="text-indigo-600 font-black">3</span> 排，每排有 <span id="gridColsText" class="text-rose-600 font-black">4</span> 個圖案：
+                    </div>
+                    
+                    <!-- SVG / Emoji Grid Container -->
+                    <div id="gridItemsContainer" class="flex flex-col items-center justify-center gap-2 max-h-60 overflow-y-auto p-2">
+                        <!-- Dynamic items rendered via JS -->
+                    </div>
+
+                    <div id="gridRepeatedAddition" class="mt-3 text-xs md:text-sm font-black text-amber-700 bg-amber-50 py-1.5 px-3 rounded-xl inline-block border border-amber-200">
+                        加法算式：4 + 4 + 4 = 12
+                    </div>
+                </div>
+
+                <!-- Instant Hint Feedback Alert -->
+                <div id="feedbackText" class="mt-4 text-base md:text-lg font-black h-7 flex items-center justify-center">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Answer Input Options Panel -->
+            
+            <!-- MODE 1: Four Multiple Choice Buttons -->
+            <div id="choiceInputPanel" class="grid grid-cols-2 gap-3 md:gap-4">
+                <!-- 4 choice buttons generated by JS -->
+            </div>
+
+            <!-- MODE 2: On-screen Big Keypad -->
+            <div id="keypadInputPanel" class="hidden flex-col items-center bg-white p-4 rounded-3xl shadow-lg border-2 border-slate-200">
+                <div class="grid grid-cols-5 gap-2 w-full max-w-md mb-3">
+                    <button onclick="pressKey('1')" class="btn-game bg-slate-100 hover:bg-slate-200 text-slate-800 text-2xl font-black p-3 rounded-2xl border border-slate-300">1</button>
+                    <button onclick="pressKey('2')" class="btn-game bg-slate-100 hover:bg-slate-200 text-slate-800 text-2xl font-black p-3 rounded-2xl border border-slate-300">2</button>
+                    <button onclick="pressKey('3')" class="btn-game bg-slate-100 hover:bg-slate-200 text-slate-800 text-2xl font-black p-3 rounded-2xl border border-slate-300">3</button>
+                    <button onclick="pressKey('4')" class="btn-game bg-slate-100 hover:bg-slate-200 text-slate-800 text-2xl font-black p-3 rounded-2xl border border-slate-300">4</button>
+                    <button onclick="pressKey('5')" class="btn-game bg-slate-100 hover:bg-slate-200 text-slate-800 text-2xl font-black p-3 rounded-2xl border border-slate-300">5</button>
+                    
+                    <button onclick="pressKey('6')" class="btn-game bg-slate-100 hover:bg-slate-200 text-slate-800 text-2xl font-black p-3 rounded-2xl border border-slate-300">6</button>
+                    <button onclick="pressKey('7')" class="btn-game bg-slate-100 hover:bg-slate-200 text-slate-800 text-2xl font-black p-3 rounded-2xl border border-slate-300">7</button>
+                    <button onclick="pressKey('8')" class="btn-game bg-slate-100 hover:bg-slate-200 text-slate-800 text-2xl font-black p-3 rounded-2xl border border-slate-300">8</button>
+                    <button onclick="pressKey('9')" class="btn-game bg-slate-100 hover:bg-slate-200 text-slate-800 text-2xl font-black p-3 rounded-2xl border border-slate-300">9</button>
+                    <button onclick="pressKey('0')" class="btn-game bg-slate-100 hover:bg-slate-200 text-slate-800 text-2xl font-black p-3 rounded-2xl border border-slate-300">0</button>
+                </div>
+
+                <div class="flex space-x-3 w-full max-w-md">
+                    <button onclick="deleteKey()" class="w-1/3 bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold p-3 rounded-2xl border border-rose-300 text-base btn-game">
+                        <i class="fa-solid fa-backspace mr-1"></i> 清除
+                    </button>
+                    <button onclick="submitKeypadAnswer()" class="w-2/3 bg-emerald-500 hover:bg-emerald-600 text-white font-black p-3 rounded-2xl shadow-lg border border-emerald-400 text-lg btn-game">
+                        確定送出 <i class="fa-solid fa-check ml-1"></i>
+                    </button>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ================= 3. SETTLEMENT / RESULT SCREEN ================= -->
+        <section id="resultScreen" class="hidden bounce-in text-center space-y-6">
+            <div class="bg-white rounded-3xl p-6 md:p-8 shadow-2xl border-4 border-amber-300 max-w-lg mx-auto relative overflow-hidden">
+                
+                <div class="text-6xl mb-2">🎉</div>
+                <h2 class="text-2xl md:text-3xl font-black text-slate-800">挑戰完成！</h2>
+                <p id="resultSubtitle" class="text-slate-500 font-bold text-sm md:text-base mt-1">太厲害了，乘法技巧越來越棒囉！</p>
+
+                <!-- Stars Rating Graphic -->
+                <div id="resultStars" class="flex justify-center space-x-2 my-6 text-4xl md:text-5xl">
+                    <i class="fa-solid fa-star text-slate-200"></i>
+                    <i class="fa-solid fa-star text-slate-200"></i>
+                    <i class="fa-solid fa-star text-slate-200"></i>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-2 gap-3 mb-6">
+                    <div class="bg-indigo-50 p-3 rounded-2xl border border-indigo-100">
+                        <div class="text-xs text-indigo-500 font-bold">答對題數</div>
+                        <div id="resultAccuracy" class="text-2xl font-black text-indigo-700">10 / 10</div>
+                    </div>
+                    <div class="bg-amber-50 p-3 rounded-2xl border border-amber-100">
+                        <div class="text-xs text-amber-600 font-bold">最高連勝 (Combo)</div>
+                        <div id="resultMaxCombo" class="text-2xl font-black text-amber-700">5</div>
+                    </div>
+                </div>
+
+                <!-- New Medal Unlocked Alert (If any) -->
+                <div id="unlockedMedalBanner" class="hidden bg-gradient-to-r from-amber-200 to-yellow-300 p-3 rounded-2xl border-2 border-amber-400 text-amber-950 font-black text-sm mb-6 flex items-center justify-center space-x-2">
+                    <span class="text-2xl">🏅</span>
+                    <span>解鎖新勳章：<span id="newMedalName">乘法小高手</span>！</span>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <button onclick="retryCurrentLevel()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-black py-3 rounded-2xl shadow-md btn-game">
+                        <i class="fa-solid fa-rotate-right mr-1"></i> 再玩一次
+                    </button>
+                    <button onclick="showScreen('menuScreen')" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-black py-3 rounded-2xl btn-game">
+                        <i class="fa-solid fa-list mr-1"></i> 返回選關
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="max-w-4xl mx-auto w-full text-center text-xs md:text-sm text-slate-400 py-3 font-bold">
+        專為國小二年級設計 · 1-10 乘法大冒險 🎮
+    </footer>
+
+    <!-- BADGES MODAL -->
+    <div id="badgesModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border-4 border-amber-300 space-y-4 bounce-in relative">
+            <button onclick="closeBadgesModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-xl w-8 h-8 rounded-full flex items-center justify-center">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <h3 class="text-xl font-black text-slate-800 flex items-center">
+                <i class="fa-solid fa-award text-amber-500 mr-2 text-2xl"></i> 成就勳章牆
+            </h3>
+
+            <div id="badgesList" class="grid grid-cols-2 gap-3 max-h-80 overflow-y-auto p-1">
+                <!-- Dynamic badges rendered by JS -->
+            </div>
+
+            <button onclick="closeBadgesModal()" class="w-full bg-amber-400 hover:bg-amber-500 text-amber-950 font-black py-2.5 rounded-2xl btn-game">
+                關閉
+            </button>
+        </div>
+    </div>
+
+    <!-- AUDIO SYNTHESIZER & GAME LOGIC -->
+    <script>
+        /* ================= AUDIO SYNTHESIZER (Web Audio API) ================= */
+        class SoundEffects {
+            constructor() {
+                this.ctx = null;
+                this.muted = false;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                }
+            }
+
+            playTone(freq, type, duration) {
+                if (this.muted) return;
+                this.init();
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type || 'sine';
+                    osc.frequency.value = freq;
+                    gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + duration);
+                } catch(e){}
+            }
+
+            correct() {
+                if (this.muted) return;
+                this.init();
+                // Upbeat 3-note chime
+                const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+                notes.forEach((freq, idx) => {
+                    setTimeout(() => this.playTone(freq, 'triangle', 0.15), idx * 80);
+                });
+            }
+
+            wrong() {
+                if (this.muted) return;
+                this.init();
+                // Low gentle buzz
+                this.playTone(220, 'sawtooth', 0.2);
+                setTimeout(() => this.playTone(180, 'sawtooth', 0.25), 150);
+            }
+
+            click() {
+                this.playTone(400, 'sine', 0.05);
+            }
+
+            fanfare() {
+                if (this.muted) return;
+                this.init();
+                const notes = [440, 554.37, 659.25, 880];
+                notes.forEach((freq, idx) => {
+                    setTimeout(() => this.playTone(freq, 'triangle', 0.25), idx * 120);
+                });
+            }
+        }
+
+        const sound = new SoundEffects();
+        let soundEnabled = true;
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            sound.muted = !soundEnabled;
+            const icon = document.getElementById('soundIcon');
+            if (soundEnabled) {
+                icon.className = 'fa-solid fa-volume-high';
+            } else {
+                icon.className = 'fa-solid fa-volume-xmark text-slate-400';
+            }
+        }
+
+        /* ================= GAME STATE & CONSTANTS ================= */
+        const CUTE_ICONS = ['🍎', '⭐', '🐱', '🚀', '🍓', '🚗', '🐶', '🌸', '🍩', '🎈'];
+
+        const BADGES_DEF = [
+            { id: 'first_step', title: '初出茅廬', desc: '完成任意 1 個關卡', icon: '🐣' },
+            { id: 'combo_5', title: '連勝專家', desc: '單局達成 5 連勝', icon: '🔥' },
+            { id: 'star_master', title: '三星達人', desc: '獲得 1 個 3 星關卡評價', icon: '⭐' },
+            { id: 'table_5', title: '乘法半程勝', desc: '解鎖 5 個關卡', icon: '🛡️' },
+            { id: 'table_10', title: '九九九乘法王', desc: '完成全部 1-10 關卡', icon: '👑' },
+            { id: 'mixed_100', title: '全能大師', desc: '在全能大挑戰中取得 100 分', icon: '🏆' }
+        ];
+
+        let gameState = {
+            currentLevel: null, // 1..10 or 'mixed'
+            questions: [],
+            qIndex: 0,
+            score: 0,
+            combo: 0,
+            maxCombo: 0,
+            userAnswer: '',
+            inputMode: 'choice', // 'choice' or 'keypad'
+            timerEnabled: false,
+            timerInterval: null,
+            timeRemaining: 15,
+            attemptsForCurrentQ: 0,
+            starsEarned: JSON.parse(localStorage.getItem('multiplication_stars') || '{}'), // {levelId: stars}
+            unlockedBadges: JSON.parse(localStorage.getItem('multiplication_badges') || '[]')
+        };
+
+        /* ================= INITIALIZATION ================= */
+        window.onload = function() {
+            renderLevelGrid();
+            updateTotalStarsDisplay();
+            updateBadgesCount();
+        };
+
+        function showScreen(screenId) {
+            sound.click();
+            document.getElementById('menuScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('flex');
+            document.getElementById('resultScreen').classList.add('hidden');
+
+            const target = document.getElementById(screenId);
+            target.classList.remove('hidden');
+            if (screenId === 'gameScreen') {
+                target.classList.add('flex');
+            }
+        }
+
+        function setInputMode(mode) {
+            sound.click();
+            gameState.inputMode = mode;
+            const choiceBtn = document.getElementById('modeChoiceBtn');
+            const keypadBtn = document.getElementById('modeKeypadBtn');
+
+            if (mode === 'choice') {
+                choiceBtn.className = "px-3 py-1 rounded-lg text-xs md:text-sm transition bg-indigo-600 text-white shadow";
+                keypadBtn.className = "px-3 py-1 rounded-lg text-xs md:text-sm transition text-slate-600 hover:bg-slate-200";
+            } else {
+                keypadBtn.className = "px-3 py-1 rounded-lg text-xs md:text-sm transition bg-indigo-600 text-white shadow";
+                choiceBtn.className = "px-3 py-1 rounded-lg text-xs md:text-sm transition text-slate-600 hover:bg-slate-200";
+            }
+        }
+
+        function toggleTimerSetting() {
+            sound.click();
+            gameState.timerEnabled = document.getElementById('timerToggle').checked;
+        }
+
+        /* 遊戲進度重置功能 */
+        function resetGameProgress() {
+            if(confirm("確定要清除所有星星和徽章進度嗎？這無法復原喔！")) {
+                sound.click();
+                
+                // 清除 LocalStorage
+                localStorage.removeItem('multiplication_stars');
+                localStorage.removeItem('multiplication_badges');
+                
+                // 清空遊戲內狀態
+                gameState.starsEarned = {};
+                gameState.unlockedBadges = [];
+                
+                // 更新畫面顯示
+                renderLevelGrid();
+                updateTotalStarsDisplay();
+                updateBadgesCount();
+                
+                alert("進度已成功重置！可以重新開始大冒險囉！");
+            }
+        }
+
+        /* ================= LEVEL GRID RENDERER ================= */
+        function renderLevelGrid() {
+            const grid = document.getElementById('levelGrid');
+            grid.innerHTML = '';
+
+            for (let i = 1; i <= 10; i++) {
+                const stars = gameState.starsEarned[i] || 0;
+                let starHtml = '';
+                for (let s = 1; s <= 3; s++) {
+                    if (s <= stars) {
+                        starHtml += '<i class="fa-solid fa-star text-amber-400 text-xs"></i>';
+                    } else {
+                        starHtml += '<i class="fa-solid fa-star text-slate-200 text-xs"></i>';
+                    }
+                }
+
+                const card = document.createElement('button');
+                card.onclick = () => startLevel(i);
+                card.className = "bg-white hover:bg-slate-50 p-4 rounded-3xl border-2 border-slate-200 shadow-md flex flex-col items-center justify-between text-center transition group btn-game";
+                card.innerHTML = `
+                    <div class="text-xs font-black text-slate-400 group-hover:text-indigo-500 mb-1">第 ${i} 關</div>
+                    <div class="text-2xl md:text-3xl font-black text-indigo-600 my-1">${i} 的乘法</div>
+                    <div class="flex space-x-1 mt-2 bg-amber-50 px-2 py-1 rounded-full border border-amber-200">
+                        ${starHtml}
+                    </div>
+                `;
+                grid.appendChild(card);
+            }
+        }
+
+        /* ================= GAME ENGINE ================= */
+        function startLevel(level) {
+            sound.click();
+            gameState.currentLevel = level;
+            gameState.qIndex = 0;
+            gameState.score = 0;
+            gameState.combo = 0;
+            gameState.maxCombo = 0;
+
+            // Generate 10 Questions
+            gameState.questions = generateQuestions(level);
+
+            // Update UI Header
+            document.getElementById('gameLevelTitle').innerText = level === 'mixed' ? '🏆 全能大挑戰' : `${level} 的乘法練習`;
+            document.getElementById('totalQuestionsCount').innerText = gameState.questions.length;
+
+            showScreen('gameScreen');
+            loadQuestion();
+        }
+
+        function generateQuestions(level) {
+            let qArr = [];
+            if (level === 'mixed') {
+                // Pick 10 random multipliers
+                for (let i = 0; i < 10; i++) {
+                    const a = Math.floor(Math.random() * 10) + 1;
+                    const b = Math.floor(Math.random() * 10) + 1;
+                    qArr.push({ a, b, answer: a * b });
+                }
+            } else {
+                // Fixed table for specific multiplier, shuffled
+                let multipliers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+                multipliers.sort(() => Math.random() - 0.5);
+                multipliers.forEach(m => {
+                    qArr.push({ a: level, b: m, answer: level * m });
+                });
+            }
+            return qArr;
+        }
+
+        function loadQuestion() {
+            const q = gameState.questions[gameState.qIndex];
+            gameState.attemptsForCurrentQ = 0;
+            gameState.userAnswer = '';
+
+            document.getElementById('currentQIndex').innerText = gameState.qIndex + 1;
+            document.getElementById('numA').innerText = q.a;
+            document.getElementById('numB').innerText = q.b;
+            document.getElementById('answerDisplay').innerText = '?';
+            document.getElementById('answerDisplay').className = "min-w-[70px] md:min-w-[100px] border-b-4 border-dashed border-indigo-400 text-indigo-700 inline-block px-2";
+            document.getElementById('feedbackText').innerHTML = '';
+
+            // Reset Visual Grid Area (Hidden by default)
+            const gridArea = document.getElementById('visualGridArea');
+            gridArea.classList.add('hidden');
+            document.getElementById('toggleGridText').innerText = `點擊查看「圖示矩陣輔助」 (${q.a}列 × ${q.b}個)`;
+
+            // Render Input Panels depending on Mode
+            if (gameState.inputMode === 'choice') {
+                document.getElementById('choiceInputPanel').classList.remove('hidden');
+                document.getElementById('choiceInputPanel').classList.add('grid');
+                document.getElementById('keypadInputPanel').classList.add('hidden');
+                document.getElementById('keypadInputPanel').classList.remove('flex');
+                renderChoices(q.answer);
+            } else {
+                document.getElementById('choiceInputPanel').classList.add('hidden');
+                document.getElementById('choiceInputPanel').classList.remove('grid');
+                document.getElementById('keypadInputPanel').classList.remove('hidden');
+                document.getElementById('keypadInputPanel').classList.add('flex');
+            }
+
+            // Reset Timer if enabled
+            if (gameState.timerEnabled) {
+                startQuestionTimer();
+            } else {
+                document.getElementById('timerContainer').classList.add('hidden');
+            }
+        }
+
+        /* Generate 4 Multiple Choice Options */
+        function renderChoices(correctAnswer) {
+            const panel = document.getElementById('choiceInputPanel');
+            panel.innerHTML = '';
+
+            let choices = new Set();
+            choices.add(correctAnswer);
+
+            while (choices.size < 4) {
+                let offset = (Math.floor(Math.random() * 5) + 1) * (Math.random() < 0.5 ? 1 : -1);
+                let fakeAnswer = correctAnswer + offset;
+                if (fakeAnswer > 0 && fakeAnswer !== correctAnswer) {
+                    choices.add(fakeAnswer);
+                }
+            }
+
+            let choiceArr = Array.from(choices).sort(() => Math.random() - 0.5);
+
+            choiceArr.forEach(val => {
+                const btn = document.createElement('button');
+                btn.onclick = () => checkAnswer(val);
+                btn.className = "bg-white hover:bg-indigo-50 text-indigo-900 border-2 border-indigo-200 rounded-2xl py-4 md:py-6 text-2xl md:text-3xl font-black shadow-md btn-game transition";
+                btn.innerText = val;
+                panel.appendChild(btn);
+            });
+        }
+
+        /* Number Keypad Actions */
+        function pressKey(numStr) {
+            sound.click();
+            if (gameState.userAnswer.length < 3) {
+                gameState.userAnswer += numStr;
+                document.getElementById('answerDisplay').innerText = gameState.userAnswer;
+            }
+        }
+
+        function deleteKey() {
+            sound.click();
+            gameState.userAnswer = gameState.userAnswer.slice(0, -1);
+            document.getElementById('answerDisplay').innerText = gameState.userAnswer || '?';
+        }
+
+        function submitKeypadAnswer() {
+            if (!gameState.userAnswer) return;
+            checkAnswer(parseInt(gameState.userAnswer));
+        }
+
+        /* Visual Array Grid Generator */
+        function toggleVisualGrid() {
+            sound.click();
+            const gridArea = document.getElementById('visualGridArea');
+            const q = gameState.questions[gameState.qIndex];
+
+            if (gridArea.classList.contains('hidden')) {
+                gridArea.classList.remove('hidden');
+                document.getElementById('toggleGridText').innerText = `隱藏「圖示矩陣輔助」`;
+                renderVisualGrid(q.a, q.b);
+            } else {
+                gridArea.classList.add('hidden');
+                document.getElementById('toggleGridText').innerText = `點擊查看「圖示矩陣輔助」 (${q.a}列 × ${q.b}個)`;
+            }
+        }
+
+        function renderVisualGrid(rows, cols) {
+            document.getElementById('gridRowsText').innerText = rows;
+            document.getElementById('gridColsText').innerText = cols;
+
+            const icon = CUTE_ICONS[(rows + cols) % CUTE_ICONS.length];
+            const container = document.getElementById('gridItemsContainer');
+            container.innerHTML = '';
+
+            // Render Rows
+            for (let r = 1; r <= rows; r++) {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = "flex items-center space-x-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm w-full justify-between";
+                
+                let iconsHtml = '<div class="flex items-center space-x-1.5 text-lg md:text-2xl overflow-x-auto">';
+                for (let c = 1; c <= cols; c++) {
+                    iconsHtml += `<span class="grid-item-pop" style="animation-delay: ${c * 0.05}s">${icon}</span>`;
+                }
+                iconsHtml += '</div>';
+
+                rowDiv.innerHTML = `
+                    <span class="text-xs font-bold text-slate-400 whitespace-nowrap">第 ${r} 排</span>
+                    ${iconsHtml}
+                    <span class="text-xs font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">(${cols}個)</span>
+                `;
+                container.appendChild(rowDiv);
+            }
+
+            // Build Repeated Addition Text
+            let addArr = Array(rows).fill(cols);
+            document.getElementById('gridRepeatedAddition').innerText = `連加觀念：${addArr.join(' + ')} = ${rows * cols}`;
+        }
+
+        /* Timer Handler */
+        function startQuestionTimer() {
+            clearInterval(gameState.timerInterval);
+            gameState.timeRemaining = 15;
+            const container = document.getElementById('timerContainer');
+            const bar = document.getElementById('timerBar');
+            container.classList.remove('hidden');
+            bar.style.width = '100%';
+
+            gameState.timerInterval = setInterval(() => {
+                gameState.timeRemaining -= 1;
+                let pct = (gameState.timeRemaining / 15) * 100;
+                bar.style.width = pct + '%';
+
+                if (gameState.timeRemaining <= 0) {
+                    clearInterval(gameState.timerInterval);
+                    sound.wrong();
+                    handleIncorrectAnswer("⏰ 時間到囉！再接再厲！");
+                }
+            }, 1000);
+        }
+
+        /* Check User Answer */
+        function checkAnswer(selectedVal) {
+            clearInterval(gameState.timerInterval);
+            const q = gameState.questions[gameState.qIndex];
+
+            if (selectedVal === q.answer) {
+                // CORRECT!
+                sound.correct();
+                gameState.score += 1;
+                gameState.combo += 1;
+                if (gameState.combo > gameState.maxCombo) {
+                    gameState.maxCombo = gameState.combo;
+                }
+
+                document.getElementById('comboCount').innerText = gameState.combo;
+                document.getElementById('answerDisplay').innerText = q.answer;
+                document.getElementById('answerDisplay').className = "min-w-[70px] md:min-w-[100px] border-b-4 border-emerald-500 text-emerald-600 inline-block px-2 animate-bounce";
+
+                document.getElementById('feedbackText').innerHTML = `
+                    <span class="text-emerald-600 flex items-center">
+                        <i class="fa-solid fa-circle-check mr-1.5 text-xl"></i> 太棒了！答對了！🎉
+                    </span>
+                `;
+
+                // Small celebratory particle
+                confetti({
+                    particleCount: 25,
+                    spread: 50,
+                    origin: { y: 0.7 }
+                });
+
+                setTimeout(() => {
+                    nextQuestion();
+                }, 1200);
+
+            } else {
+                // INCORRECT
+                sound.wrong();
+                handleIncorrectAnswer("再試一次喔！點擊黃色燈泡看看點陣圖 💡");
+            }
+        }
+
+        function handleIncorrectAnswer(msg) {
+            gameState.combo = 0;
+            document.getElementById('comboCount').innerText = 0;
+            gameState.attemptsForCurrentQ += 1;
+
+            const gameBox = document.getElementById('gameScreen');
+            gameBox.classList.add('shake');
+            setTimeout(() => gameBox.classList.remove('shake'), 400);
+
+            document.getElementById('feedbackText').innerHTML = `
+                <span class="text-rose-500 flex items-center">
+                    <i class="fa-solid fa-circle-xmark mr-1.5 text-xl"></i> ${msg}
+                </span>
+            `;
+
+            // Auto show visual helper on 2nd attempt to aid learning
+            if (gameState.attemptsForCurrentQ >= 1) {
+                const gridArea = document.getElementById('visualGridArea');
+                if (gridArea.classList.contains('hidden')) {
+                    toggleVisualGrid();
+                }
+            }
+        }
+
+        function nextQuestion() {
+            gameState.qIndex += 1;
+            if (gameState.qIndex < gameState.questions.length) {
+                loadQuestion();
+            } else {
+                finishLevel();
+            }
+        }
+
+        /* Level Completion & Results */
+        function finishLevel() {
+            sound.fanfare();
+            const total = gameState.questions.length;
+            const score = gameState.score;
+            const pct = score / total;
+
+            // Calculate Stars
+            let stars = 1;
+            if (pct >= 0.9) stars = 3;
+            else if (pct >= 0.6) stars = 2;
+
+            // Save Star Progress
+            if (typeof gameState.currentLevel === 'number') {
+                const oldStars = gameState.starsEarned[gameState.currentLevel] || 0;
+                if (stars > oldStars) {
+                    gameState.starsEarned[gameState.currentLevel] = stars;
+                    localStorage.setItem('multiplication_stars', JSON.stringify(gameState.starsEarned));
+                    updateTotalStarsDisplay();
+                    renderLevelGrid();
+                }
+            }
+
+            // Render Stars Graphic in Settlement
+            const starsContainer = document.getElementById('resultStars');
+            let starsHtml = '';
+            for (let i = 1; i <= 3; i++) {
+                if (i <= stars) {
+                    starsHtml += `<i class="fa-solid fa-star text-amber-400 animate-bounce" style="animation-delay:${i*0.15}s"></i>`;
+                } else {
+                    starsHtml += `<i class="fa-solid fa-star text-slate-200"></i>`;
+                }
+            }
+            starsContainer.innerHTML = starsHtml;
+
+            // Set Stats Text
+            document.getElementById('resultAccuracy').innerText = `${score} / ${total}`;
+            document.getElementById('resultMaxCombo').innerText = gameState.maxCombo;
+
+            // Check & Unlock Badges
+            let newBadgeUnlocked = checkBadgesUnlock(score, total, stars);
+
+            if (newBadgeUnlocked) {
+                document.getElementById('unlockedMedalBanner').classList.remove('hidden');
+                document.getElementById('newMedalName').innerText = newBadgeUnlocked.title;
+            } else {
+                document.getElementById('unlockedMedalBanner').classList.add('hidden');
+            }
+
+            // Confetti Cannon
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+
+            showScreen('resultScreen');
+        }
+
+        function retryCurrentLevel() {
+            startLevel(gameState.currentLevel);
+        }
+
+        function quitGame() {
+            clearInterval(gameState.timerInterval);
+            showScreen('menuScreen');
+        }
+
+        function updateTotalStarsDisplay() {
+            let total = 0;
+            Object.values(gameState.starsEarned).forEach(v => total += v);
+            document.getElementById('totalStarsCount').innerText = total;
+        }
+
+        /* ================= BADGES SYSTEM ================= */
+        function checkBadgesUnlock(score, total, stars) {
+            let newlyUnlocked = null;
+
+            function unlock(badgeId) {
+                if (!gameState.unlockedBadges.includes(badgeId)) {
+                    gameState.unlockedBadges.push(badgeId);
+                    localStorage.setItem('multiplication_badges', JSON.stringify(gameState.unlockedBadges));
+                    newlyUnlocked = BADGES_DEF.find(b => b.id === badgeId);
+                }
+            }
+
+            // 1. First step
+            unlock('first_step');
+
+            // 2. Combo 5
+            if (gameState.maxCombo >= 5) unlock('combo_5');
+
+            // 3. Star master
+            if (stars === 3) unlock('star_master');
+
+            // 4. Table 5
+            if (Object.keys(gameState.starsEarned).length >= 5) unlock('table_5');
+
+            // 5. Table 10
+            if (Object.keys(gameState.starsEarned).length >= 10) unlock('table_10');
+
+            // 6. Mixed 100
+            if (gameState.currentLevel === 'mixed' && score === total) unlock('mixed_100');
+
+            updateBadgesCount();
+            return newlyUnlocked;
+        }
+
+        function updateBadgesCount() {
+            document.getElementById('unlockedBadgesCount').innerText = gameState.unlockedBadges.length;
+        }
+
+        function openBadgesModal() {
+            sound.click();
+            const list = document.getElementById('badgesList');
+            list.innerHTML = '';
+
+            BADGES_DEF.forEach(b => {
+                const isUnlocked = gameState.unlockedBadges.includes(b.id);
+                const item = document.createElement('div');
+                item.className = `p-3 rounded-2xl border-2 flex items-center space-x-3 ${isUnlocked ? 'bg-amber-50 border-amber-300' : 'bg-slate-50 border-slate-200 opacity-60'}`;
+                item.innerHTML = `
+                    <div class="text-3xl">${isUnlocked ? b.icon : '🔒'}</div>
+                    <div>
+                        <div class="font-black text-xs md:text-sm ${isUnlocked ? 'text-amber-900' : 'text-slate-500'}">${b.title}</div>
+                        <div class="text-[10px] md:text-xs text-slate-500 font-bold">${b.desc}</div>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+
+            document.getElementById('badgesModal').classList.remove('hidden');
+            document.getElementById('badgesModal').classList.add('flex');
+        }
+
+        function closeBadgesModal() {
+            sound.click();
+            document.getElementById('badgesModal').classList.add('hidden');
+            document.getElementById('badgesModal').classList.remove('flex');
+        }
+    </script>
+</body>
+</html>
